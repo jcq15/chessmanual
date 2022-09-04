@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+                    <ChineseChessRecord Version="1.0">
+                    <Head>
+                    </Head>
+                    <MoveList>
+                <Move value="00-00"/>
+<Move value="17-47"/>
+<Move value="10-22"/>
+<Move value="39-48"/>
+<Move value="00-10"/>
+<Move value="19-27"/>
+<Move value="23-24"/>
+<Move value="66-65"/>
+<Move value="60-42"/>
+<Move value="79-67"/>
+<Move value="70-51"/>
+<Move value="67-55"/>
+<Move value="80-60"/>
+<Move value="09-19"/>
+<Move value="12-16"/>
+<Move value="77-57"/>
+<Move value="51-32"/>
+<Move value="89-79"/>
+<Move value="72-62"/>
+<Move value="69-87"/>
+<Move value="50-41"/>
+<Move value="79-72"/>
+<Move value="63-64"/>
+<Move value="55-43"/>
+<Move value="32-44"/>
+<Move value="72-62"/>
+<Move value="60-62"/>
+<Move value="43-62"/>
+<Move value="44-36"/>
+<Move value="65-64"/>
+<Move value="10-13"/>
+<Move value="48-37"/>
+<Move value="24-25"/>
+<Move value="26-25"/>
+<Move value="16-46"/>
+<Move value="59-48"/>
+<Move value="13-19"/>
+<Move value="27-19"/>
+<Move value="46-45"/>
+<Move value="57-56"/>
+<Move value="22-34"/>
+<Move value="64-54"/>
+<Move value="34-55"/>
+<Move value="47-46"/>
+<Move value="36-17"/>
+<Move value="29-07"/>
+<Move value="55-76"/>
+<Move value="19-27"/>
+<Move value="76-68"/>
+<Move value="56-58"/>
+<Move value="68-87"/>
+<Move value="62-74"/>
+<Move value="87-79"/>
+<Move value="58-57"/>
+<Move value="79-67"/>
+<Move value="74-53"/>
+<Move value="41-52"/>
+<Move value="54-44"/>
+<Move value="45-55"/>
+<Move value="46-45"/>
+<Move value="30-41"/>
+<Move value="48-39"/>
+<Move value="67-86"/>
+<Move value="37-48"/>
+<Move value="17-09"/>
+<Move value="44-43"/>
+<Move value="09-28" end="1"/>
+
+                </MoveList>
+                </ChineseChessRecord>
+                

@@ -1,57 +1,62 @@
-# 中国象棋棋子编号
-# 黑方棋子儿：将11、士12、象13、马14、车15、炮16、卒17
-# 红方棋子儿：帅21、仕22、相23、马24、车25、炮26、兵27
+# 中国象棋相关工具
 
-# 输入编号儿，获取棋子的汉子，返回俩：棋子名字，棋子颜色
-def get_piece_char(num):
-    if num == 11:
+# 中国象棋棋子编号
+# 黑方棋子儿：zpcmxsj
+# 红方棋子儿：ZPCMXSJ
+
+# 输入字母儿，获取棋子的汉子，返回俩：棋子名字，棋子颜色
+def get_piece_char(char):
+    if char == 'j':
         return '将', '黑'
-    elif num == 12:
+    elif char == 's':
         return '士', '黑'
-    elif num == 13:
+    elif char == 'x':
         return '象', '黑'
-    elif num == 14:
+    elif char == 'm':
         return '马', '黑'
-    elif num == 15:
+    elif char == 'c':
         return '车', '黑'
-    elif num == 16:
+    elif char == 'p':
         return '炮', '黑'
-    elif num == 17:
+    elif char == 'z':
         return '卒', '黑'
-    elif num == 21:
+    elif char == 'J':
         return '帅', '红'
-    elif num == 22:
+    elif char == 'S':
         return '仕', '红'
-    elif num == 23:
+    elif char == 'X':
         return '相', '红'
-    elif num == 24:
+    elif char == 'M':
         return '马', '红'
-    elif num == 25:
+    elif char == 'C':
         return '车', '红'
-    elif num == 26:
+    elif char == 'P':
         return '炮', '红'
-    elif num == 27:
+    elif char == 'Z':
         return '兵', '红'
+    elif char == 'O':
+        return '', ''
     else:
         return '', ''
 
-# 棋盘儿坐标：左下角儿为(0,0)，右上角儿为(8,9)
+# 棋盘儿坐标：左上角儿为(0,0)，行儿优先，右下角儿为(9,8)
 # 棋盘儿表示：
-# 在情绪里是9*10的二维list，就像坐标系第一象限一样儿
-# 在傻子库里会变成字符串儿（长度固定180，棋盘每个交叉点占两位）
+# 情绪里用二维list
+# 字符串儿（长度固定90，棋盘每个交叉点占一位），空白是'O'
 
 # 标准开局
 # 永远红方在下，黑方在上
 __standard_init = (
-    (25, 0, 0, 27, 0, 0, 17, 0, 0, 15),
-    (24, 0, 26, 0, 0, 0, 0, 16, 0, 14),
-    (23, 0, 0, 27, 0, 0, 17, 0, 0, 13),
-    (22, 0, 0, 0, 0, 0, 0, 0, 0, 12),
-    (21, 0, 0, 27, 0, 0, 17, 0, 0, 11),
-    (22, 0, 0, 0, 0, 0, 0, 0, 0, 12),
-    (23, 0, 0, 27, 0, 0, 17, 0, 0, 13),
-    (24, 0, 26, 0, 0, 0, 0, 16, 0, 14),
-    (25, 0, 0, 27, 0, 0, 17, 0, 0, 15)
+    ('c', 'm', 'x', 's', 'j', 's', 'x', 'm', 'c'),
+    ('O', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O'),
+    ('O', 'p', 'O', 'O', 'O', 'O', 'O', 'p', 'O'),
+    ('z', 'O', 'z', 'O', 'z', 'O', 'z', 'O', 'z'),
+    ('O', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O'),
+    ('O', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O'),
+    ('Z', 'O', 'Z', 'O', 'Z', 'O', 'Z', 'O', 'Z'),
+    ('O', 'P', 'O', 'O', 'O', 'O', 'O', 'P', 'O'),
+    ('O', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O'),
+    ('C', 'M', 'X', 'S', 'J', 'S', 'X', 'M', 'C')
 )
 
 def get_standard_init(read_only=False):
@@ -62,31 +67,25 @@ def get_standard_init(read_only=False):
 
 # 棋盘字符串和list表示的转换
 def board_to_string(board_ls):
-    s = ''
-    for i in range(9):
-        for j in range(10):
-            if board_ls[i][j] == 0:
-                s += '00'
-            else:
-                s += str(board_ls[i][j])
-    return s
+    return ''.join([''.join(r) for r in board_ls])
 
 def board_to_list(board_str):
-    board_ls = [[0 for i in range(10)] for j in range(9)]
-    for i in range(90):
-        board_ls[i // 10][i % 10] = int(board_str[i*2:i*2+2])
+    board_ls = [[0 for i in range(9)] for j in range(10)]
+    for i in range(10):
+        for j in range(9):
+            board_ls[i][j] = board_str[i*9+j]
     return board_ls
 
 # 棋谱儿标准表示（内部表示）
-# 情绪里是长度为5的list：棋子编号，x1, y1, x2, y2
-# 傻子库是长度为6的字符串儿，前两位是棋子儿号儿，后四位是棋盘儿坐标儿
-# 例：147967，表示棋子14（黑马儿）从(7,9)走到(6,7)，即马2进3
+# 情绪里是长度为5的list：棋子，x1, y1, x2, y2
+# 傻子库是长度为5的字符串儿，前两位是棋子儿号儿，后四位是棋盘儿坐标儿
+# 例：m0726，表示黑马儿从(0,7)走到(2,6)，即马2进3
 
 def move_to_string(move):
     return ''.join([str(i) for i in move])
 
 def move_to_list(move):
-    return [int(move[:2]), int(move[2]), int(move[3]), int(move[4]), int(move[5])]
+    return [move[0], int(move[1]), int(move[2]), int(move[3]), int(move[4])]
 
 # utils
 __cn_nums = ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九']
@@ -111,32 +110,32 @@ def move_get_cn(move, board):
     x1, y1, x2, y2 = move[1], move[2], move[3], move[4]
 
     # 后两位最简单
-    if y1 == y2:
+    if x1 == x2:
         cn3 = '平'
-    elif (y1 < y2 and is_red) or (y1 > y2 and is_black):
+    elif (x1 > x2 and is_red) or (x1 < x2 and is_black):
         cn3 = '进'
     else:
         cn3 = '退'
     
-    if x1 == x2:
-        distance = abs(y2 - y1)
+    if y1 == y2:
+        distance = abs(x2 - x1)
         cn4 = __cn_nums[distance] if is_red else str(distance)
     else:
-        cn4 = __get_column_name(x2, is_red)
+        cn4 = __get_column_name(y2, is_red)
 
     # 前两位
     # 先看这一列有几个
     this_column_count = 0       # 这一列有几个
     this_piece_order = 1        # 这玩意是第几个
     for j in range(10):
-        if board[x1][j] == move[0]:
+        if board[j][y1] == move[0]:
             this_column_count += 1
-            if (is_red and j > y1) or (is_black and j < y1):
+            if (is_red and j < x1) or (is_black and j > x1):
                 this_piece_order += 1
 
     if this_column_count == 1:
         cn1 = name
-        cn2 = __get_column_name(x1, is_red)
+        cn2 = __get_column_name(y1, is_red)
     else:
         # 查表看它叫啥
         cn1 = __cn1_ls[this_column_count][this_piece_order]
@@ -145,16 +144,16 @@ def move_get_cn(move, board):
         if name == '兵' or name == '卒':
             # 检查每一纵线有几个这玩意
             ill_columns = []        # 有至少两个的纵线
-            for i in range(9):
+            for c in range(9):
                 count = 0
-                for j in range(10):
-                    if board[i][j] == move[0]:
+                for r in range(10):
+                    if board[r][c] == move[0]:
                         count += 1
                 if count >= 2:
-                    ill_columns.append(i)
+                    ill_columns.append(c)
             if len(ill_columns) == 2:
                 # 特例：当兵卒在两个纵线都达到两个以上时，二7平6
-                cn2 = __get_column_name(x1, is_red)
+                cn2 = __get_column_name(y1, is_red)
             else:
                 cn2 = name
 
@@ -170,32 +169,86 @@ def move_get_cn(move, board):
 def next_board(board, move_ls, replace=False):
     if not replace:
         # 棋盘儿的拷贝
-        next_board = [[0 for i in range(10)] for j in range(9)]
-        for i in range(9):
-            for j in range(10):
+        next_board = [[0 for i in range(9)] for j in range(10)]
+        for i in range(10):
+            for j in range(9):
                 next_board[i][j] = board[i][j]
     else:
         next_board = board
 
     next_board[move_ls[3]][move_ls[4]] = move_ls[0]
-    next_board[move_ls[1]][move_ls[2]] = 0
+    next_board[move_ls[1]][move_ls[2]] = 'O'
 
     return next_board
 
 
+# 如果是对称的，傻子库留空即可，这样php那边就不用管这茬儿
+# 是否左右对称
+def check_lr_sym(board):
+    for i in range(10):
+        for j in range(9):
+            if board[i][j] != board[i][8-j]:
+                return False
+    return True
+
+# 是否上下对称，即上下对应位置正好大小写互换
+def check_ud_sym(board):
+    for i in range(5):
+        for j in range(9):
+            if board[i][j] == 'O' and board[9-i][j] == 'O':
+                continue  # 空白是可以的
+            if board[i][j].swapcase() != board[9-i][j]:
+                return False
+    return True
+
+# 是否上下左右对称，即镜像后是上下对称
+def check_lrud_sym(board):
+    for i in range(5):
+        for j in range(9):
+            if board[i][j] == 'O' and board[9-i][j] == 'O':
+                continue  # 空白是可以的
+            if board[i][j].swapcase() != board[9-i][8-j]:
+                return False
+    return True
+
+# 左右翻面儿，包括着法和棋盘儿
+def lr_reverse(board, move):
+    rev_board = [[row[8-i] for i in range(9)] for row in board]
+    # move是内部表示，所以很容易
+    if move:
+        rev_move = [move[0], move[1], 8-move[2], move[3], 8-move[4]]
+    else:
+        rev_move = None
+    return rev_board, rev_move
+
+# 上下翻面儿，注意红还是在下
+def ud_reverse(board, move):
+    rev_board = [[p.swapcase() if p != 'O' else p for p in board[9-i] ] for i in range(10)]
+    if move:
+        rev_move = [move[0].swapcase(), 9-move[1], move[2], 9-move[3], move[4]]
+    else:
+        rev_move = None
+    return rev_board, rev_move
+
+# 上下左右翻面儿
+def lrud_reverse(board, move):
+    return ud_reverse(*lr_reverse(board, move))
+
+
 if __name__ == '__main__':
-    '''
+    
     # 测试board_to_string和board_to_list
-    board_ls = [[0 for i in range(10)] for j in range(9)]
-    board_ls[6][7] = 14
+    board_ls = get_standard_init()
+    print(board_ls)
     print(board_to_string(board_ls))
     print(board_to_list(board_to_string(board_ls)))
-    '''
     
+    '''
     # 测试move_get_cn
     board_ls = get_standard_init()
     move_ls = [14, 7, 9, 6, 7]
     print(move_get_cn(move_ls, board_ls))
+    '''
 
 
 # 术语中英文对照 https://www.douban.com/group/topic/30094591/?_i=0459882i48gFTh

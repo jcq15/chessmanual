@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+                    <ChineseChessRecord Version="1.0">
+                    <Head>
+                    </Head>
+                    <MoveList>
+                <Move value="00-00"/>
+<Move value="29-47"/>
+<Move value="10-22"/>
+<Move value="19-38"/>
+<Move value="70-62"/>
+<Move value="26-25"/>
+<Move value="20-42"/>
+<Move value="09-29"/>
+<Move value="63-64"/>
+<Move value="77-67"/>
+<Move value="62-54"/>
+<Move value="79-87"/>
+<Move value="80-70"/>
+<Move value="89-79"/>
+<Move value="72-76"/>
+<Move value="66-65"/>
+<Move value="64-65"/>
+<Move value="47-65"/>
+<Move value="12-16"/>
+<Move value="69-47"/>
+<Move value="30-41"/>
+<Move value="38-57"/>
+<Move value="54-46"/>
+<Move value="67-68"/>
+<Move value="00-30"/>
+<Move value="29-26"/>
+<Move value="76-26"/>
+<Move value="79-70"/>
+<Move value="30-37"/>
+<Move value="17-18"/>
+<Move value="46-65"/>
+<Move value="57-65"/>
+<Move value="37-47"/>
+<Move value="59-48"/>
+<Move value="26-29" end="1"/>
+
+                </MoveList>
+                </ChineseChessRecord>
+                
