@@ -138,8 +138,12 @@ def move_get_cn(move, board):
         cn2 = __get_column_name(y1, is_red)
     else:
         # 查表看它叫啥
-        cn1 = __cn1_ls[this_column_count][this_piece_order]
-        
+        try:
+            cn1 = __cn1_ls[this_column_count][this_piece_order]
+        except Exception as e:
+            print('error', this_column_count, this_piece_order)
+            print(move)
+
         # cn2: 多于一个，要看是不是兵卒
         if name == '兵' or name == '卒':
             # 检查每一纵线有几个这玩意

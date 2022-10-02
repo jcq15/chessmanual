@@ -2,6 +2,8 @@ import chess as che
 import urllib.parse
 import os
 import sys
+import xml.etree.ElementTree as et
+from copy import copy, deepcopy
 
 from sqlalchemy import Column, String, Integer, DateTime
 from sqlalchemy import create_engine
@@ -16,9 +18,11 @@ class Position(Base):
     # 表的名字:
     __tablename__ = 'Position'
 
+    id = Column(Integer, primary_key=True, autoincrement=True) # 得有主键
     # 表的结构:
-    SourceFile = Column(String(512), primary_key=True)   # 源文件
-    Turn = Column(Integer, primary_key=True)         # 回合数
+    SourceFile = Column(String(512))   # 源文件
+    Turn = Column(Integer)         # 回合数
+    Label = Column(String(64))                          # 标签儿
 
     Board = Column(String(90))                      # 盘面
     NextMove = Column(String(5))                    # 下一步着法
@@ -38,7 +42,16 @@ class Position(Base):
     NextMoveCnLRUD = Column(String(4))                    # 下一步着法中文
 
     def __repr__(self):
-        return "<Position(SourceFile='%s', Turn=%d, Board='%s', NextMove='%s', NextMoveCn='%s')>" % (self.SourceFile, self.Turn, self.Board, self.NextMove, self.NextMoveCn)
+        return "<Position(Turn=%d, NextMove='%s', NextMoveCn='%s', Label='%s')>" % (self.Turn, self.NextMove, self.NextMoveCn, self.Label)
+
+
+# 立即执行，急急如律令
+password = urllib.parse.quote_plus('Leifeng@flower1')
+engine = create_engine(f"mysql+pymysql://root:{password}@localhost/Chess?charset=utf8mb4")
+
+Base.metadata.create_all(engine)
+
+Session = sessionmaker(bind=engine)
 
 
 # 返回Position数组
@@ -73,6 +86,7 @@ def parse_che(file):
     pos_list = []
     # 棋谱儿开始了
     board = che.get_standard_init()
+    save_board = []  # 保存每一状态的棋盘儿，用于处理分支
 
     for i in range(3, len(num_list), 10):
         sub_list = num_list[i:i+10]  # 每10位一个子列表
@@ -118,30 +132,123 @@ def parse_che(file):
     return pos_list
 
 
-def write_db(positions):
-    global Base
+def parse_cbf(file):
+    tree = et.parse(file)
+    root = tree.getroot()
+    move_list = root.findall("MoveList")[0][1:]  # 第一个是00-00
 
-    # 连接傻子库
-    password = urllib.parse.quote_plus('Leifeng@flower1')
-    engine = create_engine(f"mysql+pymysql://root:{password}@localhost/Chess?charset=utf8mb4")
-    Session = sessionmaker(bind=engine)
-    session = Session()
-    # 初始化
-    Base.metadata.create_all(engine)
+    # 带有分支的情况相当于反向DFS，需要用栈来处理
+    stack = []        # 遇到end出栈 (turn, board, branch)
+    pos_list = []
+    board = che.get_standard_init()
+    stack.append((0, board, False))
 
-    for position in positions:
-        session.add(position)
+    for move in move_list:
+        value = move.attrib['value']
+        # 在执行move之前，棋盘的回合数为turn，入库也是turn和move一起入
+        # 我爸爸是栈顶元素
+        board = deepcopy(stack[-1][1])
+        turn = stack[-1][0]
 
-    session.commit()
-    session.close()
+        # 处理pos
+        converted = [int(value[1]), int(value[0]), int(value[4]), int(value[3])]
+        piece = board[converted[0]][converted[1]]   # 棋子儿
+        standard_move = [piece, *converted]              # 着法儿
+        pos = Position(
+            SourceFile = file,
+            Turn = turn,            # 初始局面为0，红棋走一步以后的局面为1
+            Board = che.board_to_string(board),
+            NextMove = che.move_to_string(standard_move),
+            NextMoveCn = che.move_get_cn(standard_move, board),
+            # game_time = None
+        )
+        pos_list.append(pos)
+
+        # 下一局面
+        che.next_board(board, standard_move, replace=True)
+
+        # 自己入栈，然后检测end，如果有end就出栈
+        stack.append((turn+1, board, 'branch' in move.attrib))
+        if 'end' in move.attrib:
+            while True:
+                top = stack.pop()
+                if top[2]:
+                    break
+
+        return pos_list
+
+
+class DBManager:
+    # 连接傻子
+    def __init__(self, commit=False):
+        self.commit = commit
+        self.session = Session()
+
+    def __enter__(self):
+        return self
+    
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if self.commit:
+            self.session.commit()
+        self.session.close()
+        return False # re-raise this exception
+
+    # 如果指定label，则自动给这一批positions加label
+    def write_db(self, positions, label=None):
+        if label:
+            for pos in positions:
+                pos.Label = label
+        self.commit = True
+        for pos in positions:
+            self.session.add(pos)
+    
+    # 返回所有棋谱儿，数据量巨大时避免用这个
+    def query_all(self):
+        pos = self.session.query(Position).all()
+        return pos
+
+    # 一键删库！不要随便儿调用！
+    def remove_all(self, are_you_sure):
+        if are_you_sure == '老子真的要删库！':
+            self.commit = True
+            self.session.query(Position).delete()
 
 
 # 参数：文件儿路径，格式('che', 'cbr')
 if __name__ == '__main__':
-    if len(sys.argv) == 3:
+    # print(sys.argv)
+    if len(sys.argv) == 4:
         if sys.argv[2] == 'che':
-            write_db(parse_che(sys.argv[1]))
+            with DBManager(commit=True) as dm:
+                dm.write_db(parse_che(sys.argv[1]), label=sys.argv[3])
         elif sys.argv[2] == 'cbr':
             pass
             #write_db(parse_cbr(sys.argv[1]))
-        print(True)  # 大成功
+        # print(True)  # 大成功
+    elif len(sys.argv) == 2 and sys.argv[1] == 'all':
+        # 日所有
+        # 遍历/var/www/html/chess_files/下的所有目录
+        with DBManager(commit=True) as dm:
+            root = '/var/www/html/chess_files/'
+            for root, dirs, files in os.walk(root):
+                # dirs = ['9月8日之前', 'test', 'web']
+                for dir in dirs:
+                    if dir == 'web':
+                        continue
+                    # print(dir)
+                    # 遍历目录下的所有文件
+                    for file in os.listdir(root + dir):
+                        # print(file)
+                        # 逐个解析
+                        if file[-3:] == 'che':
+                            try:
+                                positions = parse_che(root + dir + '/' + file)
+                                dm.write_db(positions, dir)
+                            except Exception as e:
+                                # print(e)
+                                print(root + dir + '/' + file, '田了！')
+                        elif file[-3:] == 'cbr':
+                            pass
+                            #dm.write_db(parse_cbr(root + dir + '/' + file), dir)
+                        # print(True)  # 大成功
+                break   # os.walk 会递归遍历，我们只要第一层
